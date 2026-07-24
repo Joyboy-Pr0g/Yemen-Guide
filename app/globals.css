@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-tajawal: 'Tajawal', sans-serif;
+  --color-primary: #428177;
+  --color-primary-dark: #054239;
+  --color-accent: #b9a779;
+  --color-accent-light: #edebe0;
+  --color-umber: #6b1f2a;
+  --color-bg: #faf9f7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  direction: rtl;
+  font-family: var(--font-tajawal), sans-serif;
+  background-color: var(--color-bg);
+  color: #161616;
+}
+
+@layer utilities {
+  .skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+
+  .card-shadow {
+    box-shadow: 0 2px 12px 0 rgba(4, 50, 57, 0.07);
+  }
+
+  .card-shadow-hover {
+    box-shadow: 0 8px 32px 0 rgba(4, 50, 57, 0.13);
+  }
+
+  .gold-gradient {
+    background: linear-gradient(135deg, #b9a779, #e5dbc1);
+  }
+
+  .forest-gradient {
+    background: linear-gradient(135deg, #428177, #054239);
+  }
+
+  .warm-bg {
+    background-color: #edebe0;
+  }
+}
+
+/* RTL scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border-radius: 3px;
+}
+
+/* Smooth transitions */
+a, button {
+  transition: all 0.2s ease;
+}
+
+/* Fixed sidebar layout */
+.dashboard-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.dashboard-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  height: 100vh;
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+}
+
+.dashboard-content {
+  flex: 1;
+  overflow-y: auto;
+  height: 100vh;
+}
