@@ -48,6 +48,8 @@ async function HomeData() {
   const usAds = underSearchAds.status === 'fulfilled' ? underSearchAds.value : []
   const featuredProjects = featuredData.status === 'fulfilled' ? featuredData.value : []
 
+  console.log(cities)
+
   return (
     <HomeContent cats={cats}
       cities={cities}
