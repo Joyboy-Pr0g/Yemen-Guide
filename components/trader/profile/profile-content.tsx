@@ -8,6 +8,7 @@ import { User, Lock, Loader2, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCurrentUser, useUpdateProfile, useUpdatePassword } from '@/hooks/use-auth'
 import { Skeleton } from '@/components/ui/skeleton'
+import { DeleteAccountSection, DeleteAccountSectionPending } from '@/components/account/delete-account-section'
 
 const profileSchema = z.object({
     name: z.string().min(2, 'الاسم يجب أن يكون على الأقل حرفين'),
@@ -205,6 +206,12 @@ export default function ProfileContent() {
                         </button>
                     </form>
                 </div>
+            )}
+
+            {user?.role !== 'admin' && (
+                user?.will_delete_at
+                    ? <DeleteAccountSectionPending willDeleteAt={user.will_delete_at} />
+                    : <DeleteAccountSection />
             )}
         </div>
     )

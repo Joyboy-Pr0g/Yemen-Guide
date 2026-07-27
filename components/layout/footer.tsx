@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { SiteSettings } from '@/types'
 import { Facebook, Instagram, MessageCircle, Mail } from 'lucide-react'
-import { SiteLogo, SiteName } from '@/components/ui/site-logo'
+import { FooterBrand } from '@/components/ui/site-logo'
 import { useSettings } from '@/context/settings-context'
 import { useIsAndroid } from '@/hooks/use-is-android'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
@@ -30,10 +30,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <SiteLogo logo={settings?.logo ?? undefined} size={32} className="bg-accent" />
-              <SiteName className="text-base text-white" name={settings?.site_name ?? 'دُّلني-اليمن'} />
-            </div>
+            <FooterBrand
+              logo={settings?.logo ?? undefined}
+              name={settings?.site_name ?? 'دُّلني-اليمن'}
+            />
             <p className="text-white/70 text-sm leading-relaxed">
               دليل الأعمال والخدمات الأول في اليمن. اكتشف أفضل الأماكن والخدمات بسهولة.
             </p>

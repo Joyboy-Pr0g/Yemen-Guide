@@ -26,7 +26,7 @@ export function getImageUrl(path: string | null | undefined): string {
   return `${storageUrl}/${path}`
 }
 
-export const DEFAULT_SITE_LOGO = '/dulni-logo.jpeg'
+export const DEFAULT_SITE_LOGO = '/wayn-logo.jpeg'
 
 /** Rewrite Laravel site-logo proxy URL to the Next.js BFF endpoint (same origin). */
 export function resolveSiteLogoUrl(logo?: string | null): string {

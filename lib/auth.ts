@@ -62,6 +62,10 @@ export const logoutApi = async () => {
     return authFetch<{ message: string }>('/auth/logout', { method: 'POST' })
 }
 
+export const requestAccountDeletionApi = async () => {
+    return authFetch<{ message: string }>('/auth/request-account-deletion', { method: 'POST' })
+}
+
 export const getCurrentUserApi = async (): Promise<User> => {
     const data = await authFetch<{ user: User }>('/auth/me')
     return data.user

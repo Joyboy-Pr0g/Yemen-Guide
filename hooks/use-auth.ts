@@ -112,6 +112,8 @@ export function useLogout() {
   })
 }
 
+export { useRequestAccountDeletion } from './use-request-account-deletion'
+
 export function useCurrentUser() {
   const { user } = useAuthContext()
 

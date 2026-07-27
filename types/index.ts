@@ -9,6 +9,7 @@ export interface User {
   email: string
   role: Role
   is_blocked: boolean
+  will_delete_at?: string | null
   has_google?: boolean
   created_at: string
 }

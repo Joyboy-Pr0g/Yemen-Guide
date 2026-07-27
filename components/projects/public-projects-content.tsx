@@ -207,7 +207,7 @@ export default function PublicProjectsPageContent({
           <div className={cn(
             'grid gap-5',
             showMap && viewMode === 'split'
-              ? 'grid-cols-1'
+              ? 'grid-cols-1 lg:grid-cols-2'
               : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
           )}>
             {allProjects.map((project) => (

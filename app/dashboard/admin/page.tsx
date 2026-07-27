@@ -24,12 +24,18 @@ function DashboardCities({ citiesWithProjects }: { citiesWithProjects: CityWithP
     <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-5">
       {citiesWithProjects.map((city) => (
         <div key={city.id}>
-          <div className="bg-white rounded-2xl p-3 shadow-card">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 bg-primary">
+          <div className="relative bg-white rounded-2xl p-3 pt-4 shadow-card">
+            <span
+              className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full border border-primary/15 bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary shadow-sm"
+              title={`${city.projects_count} مشروع`}
+            >
+              <span className="tabular-nums">{city.projects_count.toLocaleString()}</span>
+              <span className="font-semibold text-primary/90">مشروع</span>
+            </span>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 mt-6 bg-primary">
               <FaIcon icon="fa-solid fa-city" className="w-5 h-5 text-white" />
             </div>
-            <p className="text-2xl font-extrabold text-gray-900">{city.name}</p>
-            <p className="text-sm text-gray-400 mt-0.5">{city.projects_count} مشروع</p>
+            <p className="text-lg font-extrabold text-gray-900 leading-snug">{city.name}</p>
           </div>
         </div>
       ))}
@@ -41,10 +47,10 @@ function DashboardCitiesSkeleton() {
     <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-5">
       {[...Array(10)].map((_, i) => (
         <div key={i}>
-          <div className="bg-white rounded-2xl p-5 shadow-card">
-            <Skeleton className="w-10 h-10 rounded-xl mb-3" />
-            <Skeleton className="h-6 w-20 mb-1" />
-            <Skeleton className="h-4 w-32" />
+          <div className="relative bg-white rounded-2xl p-3 pt-4 shadow-card">
+            <Skeleton className="absolute top-3 left-3 h-6 w-16 rounded-full" />
+            <Skeleton className="w-10 h-10 rounded-xl mb-3 mt-6" />
+            <Skeleton className="h-5 w-24" />
           </div>
         </div>
       ))}
