@@ -31,14 +31,14 @@ async function serverFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
 export async function getCategories(): Promise<Category[]> {
   const data = await serverFetch<{ categories: Category[] }>('/categories', {
-   
+    next: { revalidate: 3600, tags: ['categories'], },
   })
   return data.categories
 }
 
 export async function getCities(): Promise<City[]> {
   const data = await serverFetch<{ cities: City[] }>('/cities', {
-   
+    next: { revalidate: 3600, tags: ['cities'], },
   })
   return data.cities
 }
