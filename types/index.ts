@@ -11,6 +11,7 @@ export interface User {
   is_blocked: boolean
   will_delete_at?: string | null
   has_google?: boolean
+  email_verified_at?: string | null
   created_at: string
 }
 

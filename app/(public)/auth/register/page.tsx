@@ -5,9 +5,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
-import { Mail, Lock, User, Loader2, ShieldCheck, RotateCcw, Eye, EyeOff } from 'lucide-react'
+import { Mail, Lock, User, Loader2, Eye, EyeOff } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useRegister, useSendOtp, useVerifyOtp } from '@/hooks/use-auth'
+import { useRegister, useSendOtp, useVerifyOtp, useLogout } from '@/hooks/use-auth'
+import { EmailVerificationForm } from '@/components/auth/email-verification-form'
 import { SiteLogo } from '@/components/ui/site-logo'
 import { ImageCaptcha } from '@/components/ui/image-captcha'
 import { useSettings } from '@/context/settings-context'
@@ -44,6 +45,7 @@ export default function RegisterPage() {
   const { mutate: register, isPending } = useRegister((email) => setOtpEmail(email))
   const { mutate: sendOtp, isPending: isSendingOtp } = useSendOtp()
   const { mutate: verifyOtp, isPending: isVerifying } = useVerifyOtp(() => router.push('/'))
+  const { mutate: logout } = useLogout({ redirectTo: '/' })
 
   const { register: reg, handleSubmit, formState: { errors }, watch } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -86,71 +88,29 @@ export default function RegisterPage() {
 
   if (otpEmail) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 mb-3">
-              <SiteLogo size={40} logo={settings?.logo} />
-            </div>
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="text-2xl font-extrabold text-gray-900">تحقق من بريدك</h1>
-            <p className="text-gray-400 text-sm mt-2">
-              أرسلنا رمز التحقق إلى
-            </p>
-            <p className="text-gray-700 text-sm font-medium" dir="ltr">{otpEmail}</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-card p-6 sm:p-8 space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">رمز التحقق</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                maxLength={6}
-                value={otpValue}
-                onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-center text-xl font-bold tracking-widest outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-                placeholder="• • • • • •"
-                dir="ltr"
-              />
-            </div>
-
+      <EmailVerificationForm
+        email={otpEmail}
+        logo={settings?.logo}
+        otpValue={otpValue}
+        onOtpChange={setOtpValue}
+        onVerify={() => verifyOtp(otpValue)}
+        onResend={() => sendOtp()}
+        isVerifying={isVerifying}
+        isSendingOtp={isSendingOtp}
+        footer={
+          <p className="text-center text-xs text-gray-400">
+            يمكنك{' '}
             <button
               type="button"
-              disabled={isVerifying || otpValue.length < 4}
-              onClick={() => verifyOtp(otpValue)}
-              className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
+              onClick={() => logout()}
+              className="text-primary hover:underline font-medium"
             >
-              {isVerifying && <Loader2 className="w-4 h-4 animate-spin" />}
-              تحقق من الرمز
+              تخطي هذه الخطوة
             </button>
-
-            <button
-              type="button"
-              disabled={isSendingOtp}
-              onClick={() => sendOtp()}
-              className="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-primary transition-colors"
-            >
-              {isSendingOtp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
-              إعادة إرسال الرمز
-            </button>
-
-            <p className="text-center text-xs text-gray-400">
-              يمكنك{' '}
-              <button
-                type="button"
-                onClick={() => router.push('/')}
-                className="text-primary hover:underline font-medium"
-              >
-                تخطي هذه الخطوة
-              </button>
-              {' '}والتحقق لاحقاً من الإعدادات
-            </p>
-          </div>
-        </div>
-      </div>
+            {' '}والتحقق لاحقاً عند تسجيل الدخول
+          </p>
+        }
+      />
     )
   }
 

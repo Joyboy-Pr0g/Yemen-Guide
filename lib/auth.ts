@@ -20,12 +20,61 @@ async function authFetch<T>(path: string, options?: RequestInit): Promise<T> {
     return data
 }
 
-export const loginApi = async (data: LoginData) => {
-    return authFetch<{ user: User; message: string }>('/auth/login', {
+async function authFetch<T>(path: string, options?: RequestInit): Promise<T> {
+    const res = await fetch(`${BBF_API_URL}${path}`, {
+        credentials: 'include',
+        ...options,
+        headers: {
+            Accept: 'application/json',
+            ...(options?.headers as Record<string, string> | undefined),
+        },
+    })
+
+    const data = await res.json()
+    if (!res.ok) {
+        throw new Error(data?.message || `API Error: ${res.status}`)
+    }
+
+    return data
+}
+
+async function authFetchRaw(path: string, options?: RequestInit) {
+    const res = await fetch(`${BBF_API_URL}${path}`, {
+        credentials: 'include',
+        ...options,
+        headers: {
+            Accept: 'application/json',
+            ...(options?.headers as Record<string, string> | undefined),
+        },
+    })
+    const data = await res.json()
+    return { res, data }
+}
+
+export type LoginApiResult =
+    | { status: 'success'; user: User; message: string }
+    | { status: 'email_verification_required'; email: string; message: string }
+
+export const loginApi = async (data: LoginData): Promise<LoginApiResult> => {
+    const { res, data: json } = await authFetchRaw('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
     })
+
+    if (res.status === 403 && json.requires_email_verification) {
+        return {
+            status: 'email_verification_required',
+            email: json.email,
+            message: json.message,
+        }
+    }
+
+    if (!res.ok) {
+        throw new Error(json?.message || `API Error: ${res.status}`)
+    }
+
+    return { status: 'success', user: json.user, message: json.message }
 };
 
 export const googleLoginApi = async (role?: 'visitor' | 'trader') => {
@@ -75,11 +124,36 @@ export const sendOtpApi = async (): Promise<{ message: string }> => {
     return authFetch<{ message: string }>('/auth/send-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
 }
 
-export const verifyOtpApi = async (otp: string): Promise<{ message: string }> => {
-    return authFetch<{ message: string }>('/auth/verify-otp', {
+export const verifyOtpApi = async (otp: string): Promise<{ message: string; user?: User }> => {
+    return authFetch<{ message: string; user?: User }>('/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ otp }),
+    })
+}
+
+export type LoginVerificationCredentials = {
+    email: string
+    password: string
+}
+
+export const resendLoginVerificationApi = async (
+    data: LoginVerificationCredentials,
+): Promise<{ message: string }> => {
+    return authFetch<{ message: string }>('/auth/resend-login-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    })
+}
+
+export const verifyEmailAndLoginApi = async (
+    data: LoginVerificationCredentials & { otp: string },
+): Promise<{ user: User; message: string }> => {
+    return authFetch<{ user: User; message: string }>('/auth/verify-email-and-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
     })
 }
 

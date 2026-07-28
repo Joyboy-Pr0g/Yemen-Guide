@@ -7,9 +7,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
 import { Mail, Lock, Loader2, EyeOff, Eye } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { SiteLogo } from '@/components/ui/site-logo'
 import { ImageCaptcha } from '@/components/ui/image-captcha'
-import { useLogin } from '@/hooks/use-auth'
+import { EmailVerificationForm } from '@/components/auth/email-verification-form'
+import { useLogin, useResendLoginVerification, useVerifyEmailAndLogin } from '@/hooks/use-auth'
 import { useSearchParams } from 'next/navigation'
 import { useSettings } from '@/context/settings-context'
 import { googleLoginApi } from '@/lib/auth'
@@ -41,7 +43,19 @@ function LoginPageContent() {
   const settings = useSettings()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || undefined
-  const { mutate: login, isPending } = useLogin(redirectTo)
+  const [loginVerification, setLoginVerification] = useState<{
+    email: string
+    password: string
+  } | null>(null)
+  const [otpValue, setOtpValue] = useState('')
+  const { mutate: login, isPending } = useLogin(redirectTo, {
+    onEmailVerificationRequired: ({ email, password }) => {
+      setLoginVerification({ email, password })
+      setOtpValue('')
+    },
+  })
+  const { mutate: resendLoginVerification, isPending: isSendingOtp } = useResendLoginVerification()
+  const { mutate: verifyEmailAndLogin, isPending: isVerifyingOtp } = useVerifyEmailAndLogin(redirectTo)
   const [captchaPassed, setCaptchaPassed] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [captchaKey, setCaptchaKey] = useState(0)
@@ -187,6 +201,57 @@ function LoginPageContent() {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {loginVerification && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+            onClick={() => setLoginVerification(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-2xl shadow-card p-6 w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <EmailVerificationForm
+                variant="modal"
+                email={loginVerification.email}
+                logo={settings?.logo}
+                otpValue={otpValue}
+                onOtpChange={setOtpValue}
+                onVerify={() =>
+                  verifyEmailAndLogin({
+                    email: loginVerification.email,
+                    password: loginVerification.password,
+                    otp: otpValue,
+                  })
+                }
+                onResend={() =>
+                  resendLoginVerification({
+                    email: loginVerification.email,
+                    password: loginVerification.password,
+                  })
+                }
+                isVerifying={isVerifyingOtp}
+                isSendingOtp={isSendingOtp}
+                title="تحقق من بريدك لتسجيل الدخول"
+              />
+              <button
+                type="button"
+                className="mt-4 w-full text-sm text-gray-500 hover:text-gray-700"
+                onClick={() => setLoginVerification(null)}
+              >
+                إلغاء
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

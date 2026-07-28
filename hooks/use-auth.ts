@@ -3,37 +3,98 @@
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import { loginApi, registerApi, logoutApi, sendOtpApi, verifyOtpApi, forgotPasswordApi } from '@/lib/auth'
+import {
+  loginApi,
+  registerApi,
+  logoutApi,
+  sendOtpApi,
+  verifyOtpApi,
+  forgotPasswordApi,
+  resendLoginVerificationApi,
+  verifyEmailAndLoginApi,
+  type LoginVerificationCredentials,
+} from '@/lib/auth'
 import { updateTraderProfile, updateTraderPassword } from '@/lib/trader/trader-api'
 import { useAuthContext } from '@/context/auth-context'
 import type { LoginData, RegisterData } from '@/types'
 
-export function useLogin(redirectTo?: string) {
+function redirectAfterAuth(
+  router: ReturnType<typeof useRouter>,
+  user: { role: string },
+  redirectTo?: string,
+) {
+  if (redirectTo) {
+    router.replace(redirectTo)
+  } else if (user.role === 'admin') {
+    router.push('/dashboard/admin')
+  } else if (user.role === 'trader') {
+    router.push('/dashboard/trader')
+  } else {
+    router.push('/')
+  }
+}
+
+export type EmailVerificationRequiredPayload = {
+  email: string
+  password: string
+  message: string
+}
+
+export function useLogin(
+  redirectTo?: string,
+  options?: { onEmailVerificationRequired?: (payload: EmailVerificationRequiredPayload) => void },
+) {
   const router = useRouter()
   const { setUser } = useAuthContext()
 
   return useMutation({
     mutationFn: (data: LoginData) => loginApi(data),
-    onSuccess: ({ user, message }) => {
-      toast.success(message)
-      setUser(user)
-      if (user) {
-        if (redirectTo) {
-          router.replace(redirectTo)
-        } else if (user.role === 'admin') {
-          router.push('/dashboard/admin')
-        } else if (user.role === 'trader') {
-          router.push('/dashboard/trader')
-        } else {
-          router.push('/')
-        }
-      } else {
-        router.push('/auth/login')
+    onSuccess: (result, variables) => {
+      if (result.status === 'email_verification_required') {
+        toast.success(result.message)
+        options?.onEmailVerificationRequired?.({
+          email: result.email,
+          password: variables.password,
+          message: result.message,
+        })
+        return
       }
+      toast.success(result.message)
+      setUser(result.user)
+      redirectAfterAuth(router, result.user, redirectTo)
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : 'حدث خطأ أثناء تسجيل الدخول')
-    }
+    },
+  })
+}
+
+export function useResendLoginVerification() {
+  return useMutation({
+    mutationFn: (data: LoginVerificationCredentials) => resendLoginVerificationApi(data),
+    onSuccess: ({ message }) => {
+      toast.success(message)
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'حدث خطأ أثناء إرسال الرمز')
+    },
+  })
+}
+
+export function useVerifyEmailAndLogin(redirectTo?: string) {
+  const router = useRouter()
+  const { setUser } = useAuthContext()
+
+  return useMutation({
+    mutationFn: (data: LoginVerificationCredentials & { otp: string }) => verifyEmailAndLoginApi(data),
+    onSuccess: ({ user, message }) => {
+      toast.success(message)
+      setUser(user)
+      redirectAfterAuth(router, user, redirectTo)
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'الرمز غير صحيح أو منتهي الصلاحية')
+    },
   })
 }
 
@@ -52,7 +113,7 @@ export function useRegister(onRegisterSuccess?: (email: string) => void) {
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : 'حدث خطأ أثناء التسجيل')
-    }
+    },
   })
 }
 
@@ -64,17 +125,21 @@ export function useSendOtp() {
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : 'حدث خطأ أثناء إرسال الرمز')
-    }
+    },
   })
 }
 
 export function useVerifyOtp(onSuccess?: () => void) {
   const router = useRouter()
+  const { setUser } = useAuthContext()
 
   return useMutation({
     mutationFn: (otp: string) => verifyOtpApi(otp),
-    onSuccess: ({ message }) => {
+    onSuccess: ({ message, user }) => {
       toast.success(message)
+      if (user) {
+        setUser(user)
+      }
       if (onSuccess) {
         onSuccess()
       } else {
@@ -83,7 +148,7 @@ export function useVerifyOtp(onSuccess?: () => void) {
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : 'الرمز غير صحيح أو منتهي الصلاحية')
-    }
+    },
   })
 }
 
@@ -95,11 +160,11 @@ export function useForgotPassword() {
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : 'حدث خطأ، تحقق من البريد الإلكتروني')
-    }
+    },
   })
 }
 
-export function useLogout() {
+export function useLogout(options?: { redirectTo?: string }) {
   const router = useRouter()
   const { setUser } = useAuthContext()
 
@@ -107,7 +172,7 @@ export function useLogout() {
     mutationFn: logoutApi,
     onSuccess: () => {
       setUser(null)
-      router.push('/auth/login')
+      router.push(options?.redirectTo ?? '/auth/login')
     },
   })
 }

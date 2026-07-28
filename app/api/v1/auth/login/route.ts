@@ -41,6 +41,16 @@ export async function POST(request: NextRequest) {
     const data = await res.json()
 
     if (!res.ok) {
+        if (res.status === 403 && data.requires_email_verification) {
+            return NextResponse.json(
+                {
+                    message: data.message,
+                    requires_email_verification: true,
+                    email: data.email,
+                },
+                { status: 403 },
+            )
+        }
         return NextResponse.json({ message: data.message }, { status: res.status })
     }
 
