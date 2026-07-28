@@ -53,7 +53,7 @@ export default function Navbar({ user: serverUser }: { user: User | null }) {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <SiteLogo logo={settings?.logo ?? undefined} size={90} className="shadow-sm group-hover:shadow-md transition-shadow" />
+            <SiteLogo logo={settings?.logo ?? undefined} size={65} className="shadow-sm group-hover:shadow-md transition-shadow" />
             <div className="leading-none">
               <SiteName className="block text-base" name={settings?.site_name ?? 'دُّلني-اليمن'} />
             </div>
