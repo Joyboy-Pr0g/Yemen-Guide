@@ -82,7 +82,7 @@ export const googleCompleteApi = async (signupToken: string, role: 'visitor' | '
 };
 
 export const registerApi = async (data: RegisterData) => {
-    return authFetch<{ message: string }>('/auth/register', {
+    return authFetch<{ message: string; user?: User }>('/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

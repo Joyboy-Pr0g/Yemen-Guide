@@ -100,10 +100,14 @@ export function useVerifyEmailAndLogin(redirectTo?: string) {
 
 export function useRegister(onRegisterSuccess?: (email: string) => void) {
   const router = useRouter()
+  const { setUser } = useAuthContext()
 
   return useMutation({
     mutationFn: (data: RegisterData) => registerApi(data),
-    onSuccess: ({ message }, variables) => {
+    onSuccess: ({ message, user }, variables) => {
+      if (user) {
+        setUser(user)
+      }
       toast.success(message)
       if (onRegisterSuccess) {
         onRegisterSuccess(variables.email)
