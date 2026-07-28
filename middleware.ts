@@ -5,18 +5,30 @@ import {
     dashboardPathForRole,
     setUserRoleCookie,
 } from '@/lib/auth-cookies'
+import { isEmailVerified } from '@/lib/auth/email-verification'
 
 const TRADER_ROUTES = ['/dashboard/trader']
 const ADMIN_ROUTES = ['/dashboard/admin']
 const AUTH_ROUTES = ['/me']
 
-function loginRedirect(request: NextRequest, pathname: string) {
+function loginRedirect(request: NextRequest, pathname: string, extra?: Record<string, string>) {
     const redirectUrl = new URL('/auth/login', request.url)
     redirectUrl.searchParams.set('redirect', pathname)
+    if (extra) {
+        for (const [key, value] of Object.entries(extra)) {
+            redirectUrl.searchParams.set(key, value)
+        }
+    }
     return NextResponse.redirect(redirectUrl)
 }
 
-async function fetchUserRole(request: NextRequest, token: string): Promise<string | null> {
+type MeUser = {
+    role?: string
+    email_verified_at?: string | null
+    has_google?: boolean
+}
+
+async function fetchMeUser(request: NextRequest, token: string): Promise<MeUser | null> {
     try {
         const meUrl = new URL('/api/v1/auth/me', request.url)
         const res = await fetch(meUrl.toString(), {
@@ -27,8 +39,8 @@ async function fetchUserRole(request: NextRequest, token: string): Promise<strin
             cache: 'no-store',
         })
         if (!res.ok) return null
-        const data = (await res.json()) as { user?: { role?: string } }
-        return data.user?.role ?? null
+        const data = (await res.json()) as { user?: MeUser }
+        return data.user ?? null
     } catch {
         return null
     }
@@ -47,23 +59,27 @@ export async function middleware(request: NextRequest) {
 
     const isTraderRoute = TRADER_ROUTES.some((r) => pathname.startsWith(r))
     const isAdminRoute = ADMIN_ROUTES.some((r) => pathname.startsWith(r))
-    const isProtectedRoute = AUTH_ROUTES.some((r) => pathname.startsWith(r))
+    const isMemberRoute = AUTH_ROUTES.some((r) => pathname.startsWith(r))
+    const requiresVerifiedSession = isTraderRoute || isAdminRoute || isMemberRoute
 
-    if ((isTraderRoute || isAdminRoute || isProtectedRoute) && !token) {
-        return loginRedirect(request, pathname)
-    }
-
-    if (!token || (!isAdminRoute && !isTraderRoute)) {
+    if (!requiresVerifiedSession) {
         return NextResponse.next()
     }
 
-    const hadRoleCookie = Boolean(request.cookies.get(USER_ROLE_COOKIE)?.value?.trim())
-    let role = request.cookies.get(USER_ROLE_COOKIE)?.value?.trim()
-
-    if (!role) {
-        role = (await fetchUserRole(request, token)) ?? undefined
+    if (!token) {
+        return loginRedirect(request, pathname)
     }
 
+    const meUser = await fetchMeUser(request, token)
+    if (!meUser) {
+        return loginRedirect(request, pathname)
+    }
+
+    if (!isEmailVerified(meUser)) {
+        return loginRedirect(request, pathname, { verify_email: '1' })
+    }
+
+    const role = meUser.role?.trim()
     if (!role) {
         return loginRedirect(request, pathname)
     }
@@ -76,7 +92,8 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL(dashboardPathForRole(role), request.url))
     }
 
-    if (!hadRoleCookie && role) {
+    const hadRoleCookie = Boolean(request.cookies.get(USER_ROLE_COOKIE)?.value?.trim())
+    if (!hadRoleCookie) {
         const response = NextResponse.next()
         setUserRoleCookie(response, role)
         return response

@@ -9,6 +9,7 @@ import { useLogout } from '@/hooks/use-auth'
 import { useAuthContext } from '@/context/auth-context'
 import type { User } from '@/types'
 import { cn } from '@/lib/utils'
+import { canUseAuthenticatedNav } from '@/lib/auth/email-verification'
 import { SiteLogo, SiteName } from '@/components/ui/site-logo'
 import { SettingsContext, useSettings } from '@/context/settings-context'
 
@@ -16,7 +17,7 @@ export default function Navbar({ user: serverUser }: { user: User | null }) {
   const settings = useSettings()
   const { user: clientUser } = useAuthContext()
   const user = clientUser ?? serverUser
-  const isAuthenticated = !!user
+  const isAuthenticated = canUseAuthenticatedNav(user)
   const { mutate: logout } = useLogout()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)

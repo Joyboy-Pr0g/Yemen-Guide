@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Mail, Lock, Loader2, EyeOff, Eye } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SiteLogo } from '@/components/ui/site-logo'
@@ -15,6 +15,7 @@ import { useLogin, useResendLoginVerification, useVerifyEmailAndLogin } from '@/
 import { useSearchParams } from 'next/navigation'
 import { useSettings } from '@/context/settings-context'
 import { googleLoginApi } from '@/lib/auth'
+import toast from 'react-hot-toast'
 
 const schema = z.object({
   email: z.string().email('البريد الإلكتروني غير صحيح'),
@@ -43,6 +44,7 @@ function LoginPageContent() {
   const settings = useSettings()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || undefined
+  const verifyEmailHint = searchParams.get('verify_email') === '1'
   const [loginVerification, setLoginVerification] = useState<{
     email: string
     password: string
@@ -73,6 +75,15 @@ function LoginPageContent() {
   })
 
   const password = watch('password')
+
+  useEffect(() => {
+    if (verifyEmailHint) {
+      toast('يجب التحقق من بريدك الإلكتروني قبل الوصول إلى لوحة التحكم.', {
+        icon: '📧',
+        duration: 6000,
+      })
+    }
+  }, [verifyEmailHint])
 
   const onSubmit = (data: FormData) => {
     if (!captchaPassed || !captchaToken) return
@@ -225,11 +236,14 @@ function LoginPageContent() {
                 otpValue={otpValue}
                 onOtpChange={setOtpValue}
                 onVerify={() =>
-                  verifyEmailAndLogin({
-                    email: loginVerification.email,
-                    password: loginVerification.password,
-                    otp: otpValue,
-                  })
+                  verifyEmailAndLogin(
+                    {
+                      email: loginVerification.email,
+                      password: loginVerification.password,
+                      otp: otpValue,
+                    },
+                    { onSuccess: () => setLoginVerification(null) },
+                  )
                 }
                 onResend={() =>
                   resendLoginVerification({

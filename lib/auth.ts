@@ -20,24 +20,6 @@ async function authFetch<T>(path: string, options?: RequestInit): Promise<T> {
     return data
 }
 
-async function authFetch<T>(path: string, options?: RequestInit): Promise<T> {
-    const res = await fetch(`${BBF_API_URL}${path}`, {
-        credentials: 'include',
-        ...options,
-        headers: {
-            Accept: 'application/json',
-            ...(options?.headers as Record<string, string> | undefined),
-        },
-    })
-
-    const data = await res.json()
-    if (!res.ok) {
-        throw new Error(data?.message || `API Error: ${res.status}`)
-    }
-
-    return data
-}
-
 async function authFetchRaw(path: string, options?: RequestInit) {
     const res = await fetch(`${BBF_API_URL}${path}`, {
         credentials: 'include',
