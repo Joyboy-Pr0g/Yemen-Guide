@@ -8,6 +8,9 @@ const nextConfig = {
     '@fortawesome/react-fontawesome',
   ],
   images: {
+    // S3 URLs are already served from CDN; bypass Vercel Image Optimization
+    // to avoid 402 OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED on quota limits.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'http',
