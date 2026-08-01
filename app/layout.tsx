@@ -12,7 +12,7 @@ import Providers from '@/components/providers'
 import { SettingsProvider } from '@/context/settings-context'
 import { getSiteSettings, SITE_URL } from '@/lib/server-api'
 import { getSession } from '@/lib/auth/session'
-import { DEFAULT_SITE_LOGO } from '@/lib/utils'
+import { SOCIAL_COVER_IMAGE, SOCIAL_PROFILE_IMAGE, SOCIAL_SHARE_IMAGE } from '@/lib/utils'
 import { Analytics } from '@vercel/analytics/next'
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID
@@ -25,13 +25,9 @@ export const metadata = async () => {
     description: settings.site_description,
     keywords: settings.meta_keywords,
     icons: {
-      icon: settings.logo || DEFAULT_SITE_LOGO,
-      apple: settings.logo || DEFAULT_SITE_LOGO,
-      shortcut: settings.logo || DEFAULT_SITE_LOGO,
-      other: {
-        rel: 'icon',
-        url: settings.logo || DEFAULT_SITE_LOGO,
-      },
+      icon: settings.logo || SOCIAL_PROFILE_IMAGE,
+      apple: settings.logo || SOCIAL_PROFILE_IMAGE,
+      shortcut: settings.logo || SOCIAL_PROFILE_IMAGE,
     },
     openGraph: {
       type: 'website',
@@ -40,13 +36,16 @@ export const metadata = async () => {
       siteName: settings.site_name,
       title: settings.site_name,
       description: settings.site_description,
-      images: [{ url: '/dulni-sharer.png', width: 1080, height: 1350 }],
+      images: [
+        { url: SOCIAL_SHARE_IMAGE, width: 1080, height: 1350, alt: settings.site_name },
+        { url: SOCIAL_COVER_IMAGE, width: 1640, height: 624, alt: `${settings.site_name} — Facebook cover` },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: settings.site_name,
       description: settings.site_description,
-      images: ['/dulni-sharer.png'],
+      images: [SOCIAL_SHARE_IMAGE],
     },
   }
 }

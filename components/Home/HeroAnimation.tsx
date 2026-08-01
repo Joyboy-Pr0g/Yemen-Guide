@@ -37,7 +37,7 @@ const heroStagger = {
 const STATS = [
   { icon: Store, value: '+1,000', label: 'نشاط تجاري' },
   { icon: MapPin, value: '22', label: 'محافظة يمنية' },
-  { icon: CheckCircle2, value: '+200', label: 'نشاط موثّق' },
+  { icon: CheckCircle2, value: '+2000', label: 'نشاط موثّق' },
   { icon: Users, value: '+5,000', label: 'مستخدم نشط' },
 ]
 

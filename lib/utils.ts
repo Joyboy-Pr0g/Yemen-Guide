@@ -28,6 +28,15 @@ export function getImageUrl(path: string | null | undefined): string {
 
 export const DEFAULT_SITE_LOGO = '/wayn-logo.jpeg'
 
+/** Facebook / browser profile icon (square logo) */
+export const SOCIAL_PROFILE_IMAGE = encodeURI('/facebook profile img.jpg')
+
+/** Link preview image for Open Graph & Twitter shares */
+export const SOCIAL_SHARE_IMAGE = '/wayn-sharer.jpg'
+
+/** Facebook page cover banner */
+export const SOCIAL_COVER_IMAGE = encodeURI('/wayn facebook cover.jpg')
+
 /** Rewrite Laravel site-logo proxy URL to the Next.js BFF endpoint (same origin). */
 export function resolveSiteLogoUrl(logo?: string | null): string {
   if (!logo) return DEFAULT_SITE_LOGO
