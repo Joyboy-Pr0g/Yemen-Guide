@@ -1,6 +1,6 @@
 import { User, PaginatedMeta, Project, ProjectFilters, VerificationApplication, Category, SubCategory, Ad, AdPosition, SiteSettings, ProjectReport, ReportFilters, AuditProject, Visual } from '@/types'
 import { resolveSiteLogoUrl } from '@/lib/utils'
-import { bbfFetch, bbfUpload } from '@/lib/api'
+import { bbfFetch, bbfUpload, backendUpload } from '@/lib/api'
 
 // Users API
 export const getUsers = async (page = 1, search = '', role = ''): Promise<{ users: User[], meta: PaginatedMeta }> => {
@@ -188,11 +188,11 @@ export const getVisuals = async (): Promise<{ visuals: Visual[] }> => {
 }
 
 export const createVisual = async (data: FormData): Promise<{ message: string, visual: Visual }> => {
-  return bbfUpload<{ message: string, visual: Visual }>('/admin/visuals', data)
+  return backendUpload<{ message: string, visual: Visual }>('/admin/visuals', data)
 }
 
 export const updateVisual = async (id: number, data: FormData): Promise<{ message: string, visual: Visual }> => {
-  return bbfUpload<{ message: string, visual: Visual }>(`/admin/visuals/${id}`, data, 'PUT')
+  return backendUpload<{ message: string, visual: Visual }>(`/admin/visuals/${id}`, data, 'PUT')
 }
 
 export const deleteVisual = async (id: number): Promise<{ message: string }> => {
