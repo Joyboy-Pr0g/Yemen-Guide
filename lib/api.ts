@@ -87,12 +87,34 @@ export async function bbfFetch<T>(path: string, options?: RequestInit): Promise<
   return data
 }
 
-// Large uploads — bypass Next.js/Vercel proxy (4.5MB limit) and send directly to Laravel.
-export async function backendUpload<T>(path: string, formData: FormData, method = 'POST'): Promise<T> {
-  const token = getClientAuthToken()
-  if (!token) {
+let cachedUploadToken: string | null = null
+
+async function resolveUploadToken(): Promise<string> {
+  const local = getClientAuthToken()
+  if (local) return local
+
+  if (cachedUploadToken) return cachedUploadToken
+
+  const res = await fetch(`${BBF_API_URL}/auth/upload-token`, {
+    credentials: 'include',
+  })
+
+  if (!res.ok) {
     throw new Error('يجب تسجيل الدخول أولاً')
   }
+
+  const data = (await res.json()) as { token?: string }
+  if (!data.token) {
+    throw new Error('يجب تسجيل الدخول أولاً')
+  }
+
+  cachedUploadToken = data.token
+  return data.token
+}
+
+// Large uploads — bypass Next.js/Vercel proxy (4.5MB limit) and send directly to Laravel.
+export async function backendUpload<T>(path: string, formData: FormData, method = 'POST'): Promise<T> {
+  const token = await resolveUploadToken()
 
   const res = await fetch(`${API_URL}${path}`, {
     method,
@@ -104,6 +126,9 @@ export async function backendUpload<T>(path: string, formData: FormData, method 
   })
 
   const text = await res.text()
+  if (res.status === 401) {
+    cachedUploadToken = null
+  }
   return parseUploadResponse<T>(res, text)
 }
 
