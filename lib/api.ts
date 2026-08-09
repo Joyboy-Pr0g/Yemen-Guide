@@ -45,11 +45,22 @@ export async function bbfUpload<T>(path: string, formData: FormData, method = 'P
   })
 
   const contentType = res.headers.get('content-type') ?? ''
+  const text = await res.text()
+
   if (!contentType.includes('application/json')) {
-    throw new Error(`Expected JSON (${res.status}), got ${contentType || 'unknown type'}`)
+    const uploadLimitHint = text.includes('Content-Length') || text.includes('upload_max_filesize') || text.includes('POST Content-Length')
+      ? 'حجم الفيديو يتجاوز حد الرفع على الخادم (8MB افتراضياً). أعد تشغيل Laravel باستخدام serve.bat أو زِد upload_max_filesize في php.ini.'
+      : `استجابة غير متوقعة من الخادم (${res.status})`
+    throw new Error(uploadLimitHint)
   }
 
-  const data = await res.json()
+  let data: T & { message?: string; errors?: Record<string, string[]> }
+  try {
+    data = JSON.parse(text)
+  } catch {
+    throw new Error('تعذّر قراءة استجابة الخادم. تحقق من حد رفع الملفات في PHP.')
+  }
+
   if (!res.ok) {
     const apiError = new Error(data?.message || `API Error: ${res.status}`) as any
     apiError.errors = data?.errors

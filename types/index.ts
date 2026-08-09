@@ -221,3 +221,12 @@ export type AdminApprovalStatus ='approved' | 'rejected' | 'pending'
 export type VerificationStatus = 'pending' | 'approved' | 'rejected' | 're_approve_requested'
 export type VerificationAction = 'approve' | 'reject' | 're_approve_requested'
 export type AdPosition = 'home_page' | 'under_search' | 'sidebar' | 'footer'
+
+export type VisualKey = 'trader_create_project' | 'trader_verification'
+
+export interface Visual {
+  id: number
+  key: VisualKey
+  name: string
+  video_url: string
+}

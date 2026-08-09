@@ -12,6 +12,7 @@ import type {
   ReportFilters,
   ProjectReport,
   AuditProject,
+  Visual,
 } from '@/types'
 import {
   getUsers,
@@ -36,6 +37,10 @@ import {
   getSettings,
   updateSettings,
   uploadLogo,
+  getVisuals,
+  createVisual,
+  updateVisual,
+  deleteVisual,
   getAdminPendingProjects,
   getAdminReports,
   getAdminAuditProjects,
@@ -633,6 +638,67 @@ export function useUploadLogo() {
           toast.error(error)
         })
       }
+    },
+  })
+}
+
+export function useAdminVisuals(initialData?: Visual[]) {
+  return useQuery({
+    queryKey: ['admin', 'visuals'],
+    queryFn: () => getVisuals().then((data) => data.visuals),
+    initialData,
+    staleTime: 0,
+    refetchOnMount: false,
+  })
+}
+
+export function useCreateVisual() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: FormData) => createVisual(data),
+    onSuccess: (data) => {
+      toast.success(data.message)
+      queryClient.invalidateQueries({ queryKey: ['admin', 'visuals'] })
+      queryClient.invalidateQueries({ queryKey: ['visual'] })
+    },
+    onError: (error: any) => {
+      toast.error(error.message)
+      if (error.errors) {
+        Object.values(error.errors).flat().forEach((err: any) => toast.error(err))
+      }
+    },
+  })
+}
+
+export function useUpdateVisual() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: FormData }) => updateVisual(id, data),
+    onSuccess: (data) => {
+      toast.success(data.message)
+      queryClient.invalidateQueries({ queryKey: ['admin', 'visuals'] })
+      queryClient.invalidateQueries({ queryKey: ['visual'] })
+    },
+    onError: (error: any) => {
+      toast.error(error.message)
+      if (error.errors) {
+        Object.values(error.errors).flat().forEach((err: any) => toast.error(err))
+      }
+    },
+  })
+}
+
+export function useDeleteVisual() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => deleteVisual(id),
+    onSuccess: (data) => {
+      toast.success(data.message)
+      queryClient.invalidateQueries({ queryKey: ['admin', 'visuals'] })
+      queryClient.invalidateQueries({ queryKey: ['visual'] })
+    },
+    onError: (error: any) => {
+      toast.error(error.message)
     },
   })
 }

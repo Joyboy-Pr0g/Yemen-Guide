@@ -12,6 +12,7 @@ import toast from 'react-hot-toast'
 import type { PaginatedMeta, Project, VerificationApplication } from '@/types'
 import { useInfiniteTraderProjects } from '@/hooks/use-trader'
 import { SearchableSelect } from '@/components/ui/searchable-select'
+import { TutorialVideoButton } from '@/components/ui/tutorial-video-button'
 
 const schema = z.object({
     project_id: z.string().min(1, 'اختر المشروع'),
@@ -118,13 +119,19 @@ export default function VerificationsContent(
         <div>
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-xl font-bold text-gray-900">طلبات التوثيق</h1>
-                <button
-                    onClick={() => openForm()}
-                    className="flex items-center gap-2 bg-accent text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-accent/90 transition-colors"
-                >
-                    <Plus className="w-4 h-4" />
-                    طلب توثيق جديد
-                </button>
+                <div className="flex items-center gap-3">
+                    <TutorialVideoButton
+                        visualKey="trader_verification"
+                        label="كيفية طلب التوثيق"
+                    />
+                    <button
+                        onClick={() => openForm()}
+                        className="flex items-center gap-2 bg-accent text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-accent/90 transition-colors"
+                    >
+                        <Plus className="w-4 h-4" />
+                        طلب توثيق جديد
+                    </button>
+                </div>
             </div>
 
             {showForm && (

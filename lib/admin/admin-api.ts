@@ -1,4 +1,4 @@
-import { User, PaginatedMeta, Project, ProjectFilters, VerificationApplication, Category, SubCategory, Ad, AdPosition, SiteSettings, ProjectReport, ReportFilters, AuditProject } from '@/types'
+import { User, PaginatedMeta, Project, ProjectFilters, VerificationApplication, Category, SubCategory, Ad, AdPosition, SiteSettings, ProjectReport, ReportFilters, AuditProject, Visual } from '@/types'
 import { resolveSiteLogoUrl } from '@/lib/utils'
 import { bbfFetch, bbfUpload } from '@/lib/api'
 
@@ -180,4 +180,21 @@ export const updateSettings = async (settings: Omit<SiteSettings, 'logo'>): Prom
 
 export const uploadLogo = async (logo: FormData): Promise<{ message: string, logo: string }> => {
   return bbfUpload<{ message: string, logo: string }>(`/admin/settings/logo`, logo, 'POST')
+}
+
+// Visuals API
+export const getVisuals = async (): Promise<{ visuals: Visual[] }> => {
+  return bbfFetch<{ visuals: Visual[] }>('/admin/visuals')
+}
+
+export const createVisual = async (data: FormData): Promise<{ message: string, visual: Visual }> => {
+  return bbfUpload<{ message: string, visual: Visual }>('/admin/visuals', data)
+}
+
+export const updateVisual = async (id: number, data: FormData): Promise<{ message: string, visual: Visual }> => {
+  return bbfUpload<{ message: string, visual: Visual }>(`/admin/visuals/${id}`, data, 'PUT')
+}
+
+export const deleteVisual = async (id: number): Promise<{ message: string }> => {
+  return bbfFetch<{ message: string }>(`/admin/visuals/${id}`, { method: 'DELETE' })
 }

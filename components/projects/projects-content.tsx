@@ -22,6 +22,7 @@ import ProjectTablesSkeleton from '../skeleton/project/ProjecTablesSkeleton'
 import { Badge } from '../ui/badge'
 import { RejectModal } from './reject-model'
 import toast from 'react-hot-toast'
+import { TutorialVideoButton } from '@/components/ui/tutorial-video-button'
 
 
 interface ProjectsPageContentProps {
@@ -161,7 +162,15 @@ export default function ProjectsPageContent({ initialData, cities, categories, t
         <div>
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-xl font-bold text-gray-900">المشاريع</h1>
-                {data && <p className="text-sm text-gray-400">{data.meta.total} مشروع</p>}
+                <div className="flex items-center gap-3">
+                    {!isAdmin && (
+                        <TutorialVideoButton
+                            visualKey="trader_create_project"
+                            label="كيفية إنشاء مشروع"
+                        />
+                    )}
+                    {data && <p className="text-sm text-gray-400">{data.meta.total} مشروع</p>}
+                </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
