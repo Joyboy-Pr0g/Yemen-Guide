@@ -1,16 +1,22 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { normalizeYemenPhone } from './yemen-phone'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
 export function normalizePhoneForWhatsApp(phone: string): string {
-  let normalized = phone.trim()
-  if (normalized.startsWith('0')) {
-    normalized = '+963' + normalized.slice(1)
+  const normalized = normalizeYemenPhone(phone)
+  if (normalized) {
+    return normalized.replace(/\s+/g, '')
   }
-  return normalized.replace(/\s+/g, '').replace(/[^+\d]/g, '')
+
+  let fallback = phone.trim()
+  if (fallback.startsWith('0')) {
+    fallback = '+967' + fallback.slice(1)
+  }
+  return fallback.replace(/\s+/g, '').replace(/[^+\d]/g, '')
 }
 
 export function getWhatsAppUrl(phone: string, message?: string): string {

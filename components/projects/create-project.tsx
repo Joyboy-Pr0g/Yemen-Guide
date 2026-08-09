@@ -8,6 +8,7 @@ import { SearchableSelect } from '@/components/ui/searchable-select'
 import { useDebounce } from '@/hooks/use-debounce'
 import { useInfiniteUsers } from '@/hooks/use-admin'
 import { getImageUrl } from '@/lib/utils'
+import { formatYemenPhoneInput, normalizeYemenPhone } from '@/lib/yemen-phone'
 
 const MAX_FEATURED_IMAGES = 4
 
@@ -76,6 +77,7 @@ export function ProjectFormModal({
     const [logoPreview, setLogoPreview] = useState<string | null>(null)
     const [featuredImages, setFeaturedImages] = useState<{ file: File; preview: string }[]>([])
     const [imageError, setImageError] = useState('')
+    const [phoneError, setPhoneError] = useState('')
     const [tradersSearch, setTradersSearch] = useState('')
     const debouncedTradersSearch = useDebounce(tradersSearch, 300)
     const {
@@ -123,6 +125,7 @@ export function ProjectFormModal({
         setLogoFile(null)
         setFeaturedImages([])
         setImageError('')
+        setPhoneError('')
     }, [open, isEdit, project])
 
     const resetForm = () => {
@@ -133,6 +136,7 @@ export function ProjectFormModal({
         setLogoPreview(null)
         setFeaturedImages([])
         setImageError('')
+        setPhoneError('')
     }
 
     const handleLogoChange = (file: File | null) => {
@@ -182,6 +186,23 @@ export function ProjectFormModal({
             return
         }
 
+        const phone = normalizeYemenPhone(formData.phone_number)
+        if (!phone) {
+            setPhoneError('رقم الهاتف يجب أن يكون رقماً يمنياً صالحاً (مثال: 770 838 513).')
+            return
+        }
+
+        let whatsapp: string | null = null
+        if (formData.whatsapp_number?.trim()) {
+            whatsapp = normalizeYemenPhone(formData.whatsapp_number)
+            if (!whatsapp) {
+                setPhoneError('رقم الواتساب يجب أن يكون رقماً يمنياً صالحاً (مثال: 770 838 513).')
+                return
+            }
+        }
+
+        setPhoneError('')
+
         const payload = new FormData()
         if (isAdmin) payload.append('user_id', String(formData.user_id))
         payload.append('name', formData.name)
@@ -190,8 +211,8 @@ export function ProjectFormModal({
         payload.append('sub_category_id', String(formData.sub_category_id))
         payload.append('city_id', String(formData.city_id))
         payload.append('neighborhood_id', String(formData.neighborhood_id))
-        payload.append('phone_number', formData.phone_number)
-        if (formData.whatsapp_number) payload.append('whatsapp_number', formData.whatsapp_number)
+        payload.append('phone_number', phone)
+        if (whatsapp) payload.append('whatsapp_number', whatsapp)
         if (formData.latitude !== null) payload.append('latitude', String(formData.latitude))
         if (formData.longitude !== null) payload.append('longitude', String(formData.longitude))
         if (imageFile) payload.append('image', imageFile)
@@ -398,20 +419,38 @@ export function ProjectFormModal({
                             <div className="space-y-1.5">
                                 <label className="text-xs font-semibold text-gray-500 block">رقم الهاتف الأساسي</label>
                                 <input
-                                    type="tel" required placeholder="09xxxxxxxx" dir="ltr" value={formData.phone_number}
-                                    onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                                    type="tel" required placeholder="770 838 513" dir="ltr" value={formData.phone_number}
+                                    onChange={(e) => {
+                                        setPhoneError('')
+                                        setFormData({ ...formData, phone_number: formatYemenPhoneInput(e.target.value) })
+                                    }}
                                     className="w-full text-sm bg-gray-50/50 text-gray-800 px-4 py-2.5 rounded-xl border border-gray-200 text-right outline-none focus:border-primary"
                                 />
-                                {errors.phone_number && <p className="text-xs text-red-600 font-medium mt-1 pr-1">{errors.phone_number[0]}</p>}
+                                {(phoneError || errors.phone_number) && (
+                                    <p className="text-xs text-red-600 font-medium mt-1 pr-1">
+                                        {phoneError || errors.phone_number?.[0]}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-1.5">
                                 <label className="text-xs font-semibold text-gray-500 block">رقم الواتساب (اختياري)</label>
                                 <input
-                                    type="tel" placeholder="09xxxxxxxx" dir="ltr" value={formData.whatsapp_number || ''}
-                                    onChange={(e) => setFormData({ ...formData, whatsapp_number: e.target.value || null })}
+                                    type="tel" placeholder="770 838 513" dir="ltr" value={formData.whatsapp_number || ''}
+                                    onChange={(e) => {
+                                        setPhoneError('')
+                                        setFormData({
+                                            ...formData,
+                                            whatsapp_number: e.target.value
+                                                ? formatYemenPhoneInput(e.target.value)
+                                                : null,
+                                        })
+                                    }}
                                     className="w-full text-sm bg-gray-50/50 text-gray-800 px-4 py-2.5 rounded-xl border border-gray-200 text-right outline-none focus:border-primary"
                                 />
+                                {errors.whatsapp_number && (
+                                    <p className="text-xs text-red-600 font-medium mt-1 pr-1">{errors.whatsapp_number[0]}</p>
+                                )}
                             </div>
                         </div>
                     </div>
